@@ -95,7 +95,13 @@ function App() {
 
   useEffect(() => {
     console.log("🚀 Attempting to connect to:", BACKEND_WS);
-    socket = io(BACKEND_WS, { transports: ["websocket"] });
+    socket = io(BACKEND_WS, {
+      transports: ["websocket", "polling"], // Allow polling as fallback - important for production
+      timeout: 20000, // 20 seconds - gives Render time if it's waking up
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+    });
 
     socket.on("connect", () => {
       console.log("✅ Connected to backend");
@@ -104,8 +110,8 @@ function App() {
       setIsConnected(true);
     });
 
-    socket.on("disconnect", () => {
-      console.log("❌ Disconnected from backend");
+    socket.on("disconnect", (reason) => {
+      console.log("❌ Disconnected from backend. Reason:", reason);
       setIsConnected(false);
     });
 
