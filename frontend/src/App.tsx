@@ -26,6 +26,13 @@ type MatchOdds = {
 
 const BACKEND_WS = import.meta.env.VITE_BACKEND_WS || "http://localhost:4000";
 
+// Log the backend URL being used
+console.log("🔗 Backend URL configured:", BACKEND_WS);
+console.log(
+  "🔍 Environment variable VITE_BACKEND_WS:",
+  import.meta.env.VITE_BACKEND_WS || "NOT SET (using default)"
+);
+
 let socket: Socket;
 
 type OddsChange = {
@@ -47,15 +54,24 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("🚀 Attempting to connect to:", BACKEND_WS);
     socket = io(BACKEND_WS, { transports: ["websocket"] });
 
     socket.on("connect", () => {
-      console.log("connected to backend", socket.id);
+      console.log("✅ Connected to backend");
+      console.log("📡 Socket ID:", socket.id);
+      console.log("🌐 Connected to URL:", BACKEND_WS);
       setIsConnected(true);
     });
 
     socket.on("disconnect", () => {
+      console.log("❌ Disconnected from backend");
       setIsConnected(false);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("❌ Connection error:", error);
+      console.error("🔗 Failed to connect to:", BACKEND_WS);
     });
 
     socket.on("odds:update", (data: MatchOdds[]) => {
