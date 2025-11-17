@@ -26,21 +26,37 @@ type MatchOdds = {
 
 // Automatically determine backend URL based on environment
 const getBackendUrl = () => {
-  // If environment variable is explicitly set, use it
-  if (import.meta.env.VITE_BACKEND_WS) {
-    return import.meta.env.VITE_BACKEND_WS;
+  const envVar = import.meta.env.VITE_BACKEND_WS;
+  const isDev = import.meta.env.DEV;
+  const hostname =
+    typeof window !== "undefined" ? window.location.hostname : "";
+  const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
+  const isVercel = hostname.includes("vercel.app");
+
+  // Debug logging
+  console.log("🔍 Debug info:", {
+    envVar,
+    isDev,
+    hostname,
+    isLocalhost,
+    isVercel,
+    mode: import.meta.env.MODE,
+  });
+
+  // If environment variable is explicitly set AND not localhost, use it
+  if (envVar && envVar !== "http://localhost:4000") {
+    console.log("✅ Using explicit env var:", envVar);
+    return envVar;
   }
 
   // If running on localhost (development), use local backend
-  if (
-    import.meta.env.DEV ||
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-  ) {
+  if (isDev || isLocalhost) {
+    console.log("🏠 Using localhost backend (development)");
     return "http://localhost:4000";
   }
 
   // Otherwise (production/Vercel), use Render backend
+  console.log("🚀 Using production Render backend");
   return "https://duelbits-backend.onrender.com";
 };
 
