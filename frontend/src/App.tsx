@@ -24,13 +24,37 @@ type MatchOdds = {
   status: "pre" | "live" | "finished";
 };
 
-const BACKEND_WS = import.meta.env.VITE_BACKEND_WS || "http://localhost:4000";
+// Automatically determine backend URL based on environment
+const getBackendUrl = () => {
+  // If environment variable is explicitly set, use it
+  if (import.meta.env.VITE_BACKEND_WS) {
+    return import.meta.env.VITE_BACKEND_WS;
+  }
+
+  // If running on localhost (development), use local backend
+  if (
+    import.meta.env.DEV ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  ) {
+    return "http://localhost:4000";
+  }
+
+  // Otherwise (production/Vercel), use Render backend
+  return "https://duelbits-backend.onrender.com";
+};
+
+const BACKEND_WS = getBackendUrl();
 
 // Log the backend URL being used
 console.log("🔗 Backend URL configured:", BACKEND_WS);
 console.log(
+  "🌍 Environment:",
+  import.meta.env.DEV ? "Development" : "Production"
+);
+console.log(
   "🔍 Environment variable VITE_BACKEND_WS:",
-  import.meta.env.VITE_BACKEND_WS || "NOT SET (using default)"
+  import.meta.env.VITE_BACKEND_WS || "NOT SET (auto-detected)"
 );
 
 let socket: Socket;
